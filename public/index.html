@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Gestión de Postres</title>
+</head>
+<body>
+    <h1>Gestión de Postres</h1>
+    
+    <h2>Crear un nuevo postre</h2>
+    <form id="createPostreForm">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" required>
+        
+        <label for="calorias">Calorías:</label>
+        <input type="text" id="calorias" required>
+        
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" step="0.01" required>
+        
+        <label for="fecha_elaboracion">Fecha de Elaboración:</label>
+        <input type="date" id="fecha_elaboracion" required>
+        
+        <button type="submit">Crear Postre</button>
+    </form>
+
+    <h2>Modificar un postre</h2>
+    <form id="updatePostreForm">
+        <label for="updateId">ID del Postre:</label>
+        <input type="number" id="updateId" required>
+        
+        <label for="updateNombre">Nuevo Nombre:</label>
+        <input type="text" id="updateNombre">
+        
+        <label for="updatePrecio">Nuevo Precio:</label>
+        <input type="number" id="updatePrecio" step="0.01">
+        
+        <button type="submit">Modificar Postre</button>
+    </form>
+
+    <h2>Eliminar un postre</h2>
+    <form id="deletePostreForm">
+        <label for="deleteId">ID del Postre a Eliminar:</label>
+        <input type="number" id="deleteId" required>
+        <button type="submit">Eliminar Postre</button>
+    </form>
+
+    <h2>Listado de Postres</h2>
+    <button id="fetchPostres">Cargar Postres</button>
+    <ul id="postresList"></ul>
+
+    <script>
+        const apiUrl = "http://localhost:3001/postres"; // Cambia esto si es necesario
+
+        document.getElementById("createPostreForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const postre = {
+                nombre: document.getElementById("nombre").value,
+                calorias: document.getElementById("calorias").value,
+                precio: parseFloat(document.getElementById("precio").value),
+                fecha_elaboracion: document.getElementById("fecha_elaboracion").value,
+            };
+            await fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(postre),
+            });
+            document.getElementById("createPostreForm").reset();
+            loadPostres(); // Cargar postres después de crear uno
+        });
+
+        document.getElementById("updatePostreForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("updateId").value;
+            const updatedData = {};
+            if (document.getElementById("updateNombre").value) {
+                updatedData.nombre = document.getElementById("updateNombre").value;
+            }
+            if (document.getElementById("updatePrecio").value) {
+                updatedData.precio = parseFloat(document.getElementById("updatePrecio").value);
+            }
+            await fetch(`${apiUrl}/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedData),
+            });
+            document.getElementById("updatePostreForm").reset();
+            loadPostres(); // Cargar postres después de modificar uno
+        });
+
+        document.getElementById("deletePostreForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("deleteId").value;
+            await fetch(`${apiUrl}/${id}`, {
+                method: "DELETE",
+            });
+            document.getElementById("deletePostreForm").reset();
+            loadPostres(); // Cargar postres después de eliminar uno
+        });
+
+        document.getElementById("fetchPostres").addEventListener("click", loadPostres);
+
+        async function loadPostres() {
+            const response = await fetch(apiUrl);
+            const postres = await response.json();
+            const postresList = document.getElementById("postresList");
+            postresList.innerHTML = ""; // Limpiar la lista
+            postres.forEach(postre => {
+                const li = document.createElement("li");
+                li.textContent = `ID: ${postre.id}, Nombre: ${postre.nombre}, Calorías: ${postre.calorias}, Precio: $${postre.precio}, Fecha de Elaboración: ${new Date(postre.fecha_elaboracion).toLocaleDateString()}`;
+                postresList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

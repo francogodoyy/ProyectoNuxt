@@ -12,6 +12,9 @@ const prisma = new PrismaClient();
 // Middleware para manejar JSON
 app.use(express.json());
 
+app.use(express.static("public"));
+
+
 // Puerto configurado desde el archivo .env
 const PORT = process.env.PORT_EXPRESS || 3001;
 
